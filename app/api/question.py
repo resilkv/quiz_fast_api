@@ -81,75 +81,105 @@ def create_bulk_question(questions:BulkQuestionCreate,db: Session= Depends(get_d
 @router.get("/question-list",response_model=ResponseSchema[Union[QuestionResponse,List[QuestionResponse]]],status_code=200)
 def get_questions(quiz_id: Optional[int] = Query(None), id: Optional[int] = Query(None),db : Session= Depends(get_db)):
 
-    questions = db.query(Questions).order_by(Questions.id.desc())
+    try:
+        questions = db.query(Questions).order_by(Questions.id.desc())
 
-    if quiz_id:
+        if quiz_id:
 
-        questions = questions.filter(Questions.quiz_id==quiz_id)
-    
-    if id:
-        questions = questions.filter(Questions.id==id).first()
+            questions = questions.filter(Questions.quiz_id==quiz_id)
+        
+        if id:
+            questions = questions.filter(Questions.id==id).first()
 
-    return ResponseSchema(
-        status="success",
-        status_code=200,
-        message="Questions fetched successfully",
-        data=questions 
-    )
+        return ResponseSchema(
+            status="success",
+            status_code=200,
+            message="Questions fetched successfully",
+            data=questions 
+        )
+
+    except Exception as e:
+        return ResponseSchema(
+            status="error",
+            status_code=500,
+            message="Failed to fetch Questions",
+            error=str(e),
+            data=[]
+        )
 
 @router.put("question-update",response_model=ResponseSchema[QuestionCreate],status_code=200)
 def update_question(question:QuestionUpdate, id : int ,db : Session=Depends(get_db)):
 
-   
+    try:
 
-    question_db = db.query(Questions).filter(Questions.id==id).first()
-    if not question_db:
+        question_db = db.query(Questions).filter(Questions.id==id).first()
+        if not question_db:
+            return ResponseSchema(
+                status="error",
+                status_code=404,
+                message="Questions Not Found",
+                error="Invalid ID" 
+            )
+        
+        update_data = question.model_dump(exclude_unset=True)
+        for key,val in update_data.items():
+            setattr(question_db,key,val)
+            db.commit()
+            db.refresh(question_db)
+
+        return ResponseSchema(
+            status="update",
+            status_code=200,
+            message="Question Updated",
+            data=question_db
+
+        )
+
+    except Exception as e:
+        db.rollback()
         return ResponseSchema(
             status="error",
-            status_code=404,
-            message="Questions Not Found",
-            error="Invalid ID" 
+            status_code=500,
+            message="Failed to update Question",
+            error=str(e),
+            data=[]
         )
-    
-    update_data = question.model_dump(exclude_unset=True)
-    for key,val in update_data.items():
-        setattr(question_db,key,val)
-        db.commit()
-        db.refresh(question_db)
-
-    return {
-            "status":"update",
-            "status_code":200,
-            "message":"Question Updated",
-            "data":question_db
-
-        }
-
 
 @router.delete("/delete-questions",status_code=200)
 def delete_quiz(ids:List[int],db:Session=Depends(get_db)):
 
-    for id in ids:
+    try:
 
-        question = db.query(Questions).filter(Questions.id==id).first()
+        for id in ids:
 
-        if not question:
-            return {
-                "status":"Error",
-                "status_code":500,
-                "message":"Invalid ID",
-                "data":None
+            question = db.query(Questions).filter(Questions.id==id).first()
 
-            }
-        
-        db.delete(question)
-        db.commit()
+            if not question:
+                return {
+                    "status":"Error",
+                    "status_code":500,
+                    "message":"Invalid ID",
+                    "data":None
+
+                }
+            
+            db.delete(question)
+            db.commit()
 
 
-    return {
-            "status":"update",
-            "status_code":200,
-            "message":"Questions Deleted",
-            "data":None
+        return ResponseSchema(
+                status="update",
+                status_code=200,
+                message="Questions Deleted",
+                data=None
+                )
 
-        }
+    except Exception as e:
+        db.rollback()
+        return ResponseSchema(
+            status="error",
+            status_code=500,
+            message="Failed to delete quiz",
+            error=str(e),
+            data=None
+        )

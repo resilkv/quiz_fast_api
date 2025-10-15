@@ -22,8 +22,6 @@ routers = APIRouter(
 @routers.post("/",response_model=ResponseSchema[AnswerSubmissionSchema],status_code=201)
 def submit_answer(answers:StudentAnswerSchema,db: Session=Depends(get_db) ,current_user: Student = Depends(get_current_user)):
 
-    
-  
     total_marks = 0
     actual_marks = 0
     quiz_id = None
@@ -62,11 +60,11 @@ def submit_answer(answers:StudentAnswerSchema,db: Session=Depends(get_db) ,curre
             actual_marks += points
 
             if question.type in ['multiple_choice', 'true_false']:
-                question.correct_answer = answer.answer
+                if question.correct_answer == answer.answer:
                 
-                total_marks += points
+                    total_marks += points
 
-                is_correct = True
+                    is_correct = True
             else:
                 total_marks += points
 

@@ -19,6 +19,7 @@ router = APIRouter(
 def create_quiz(quiz: QuizCreate, db: Session = Depends(get_db)):
    
     try:
+        
         db_quiz = Quiz(title=quiz.title, description=quiz.description,passing_criteria=quiz.passing_criteria)
         db.add(db_quiz)
         db.commit()
@@ -47,21 +48,20 @@ def get_quizes(id:Optional[int] = Query(None),db: Session=Depends(get_db),limit:
         if id:
             quiz = db.query(QuizModel.Quiz).filter(QuizModel.Quiz.id==id).first()
             if not quiz:
-                return {
-                    "status":"Error",
-                    "status_code":404,
-                    "message":"Quiz Not found",
-                    "data":[]
+                return ResponseSchema(
+                    status="Error",
+                    status_code=404,
+                    message = "Quiz Not found",
+                    data = None
+                )
+            
+            return ResponseSchema(
+                    status="Success",
+                    status_code=201,
+                    message="Quiz fetched successfully",
+                    data=quiz
 
-                }
-
-            return {
-                    "status":"Success",
-                    "status_code":201,
-                    "message":"Quiz fetched successfully",
-                    "data":quiz
-
-                }
+            )
 
         total_quizzes = db.query(func.count(QuizModel.Quiz.id)).scalar()
         quizzes = db.query(QuizModel.Quiz).order_by(QuizModel.Quiz.id.desc()).offset(offset).limit(limit).all()
@@ -74,7 +74,6 @@ def get_quizes(id:Optional[int] = Query(None),db: Session=Depends(get_db),limit:
         )
 
     except Exception as e:
-        db.rollback()
         return ResponseSchema(
             status="error",
             status_code=500,
@@ -87,53 +86,77 @@ def get_quizes(id:Optional[int] = Query(None),db: Session=Depends(get_db),limit:
 @router.put("/quiz-update/{id}",response_model=ResponseSchema[QuizResponse],status_code=200)
 def update_quiz(id:int,quiz:QuizUpdate,db:Session=Depends(get_db)):
 
-    quiz_ = db.query(QuizModel.Quiz).filter(QuizModel.Quiz.id==id).first()
-    if quiz_:
-        update_data = quiz.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(quiz_, key, value)
-        db.commit()
-        db.refresh(quiz_)
-        return {
-            "status":"update",
-            "status_code":200,
-            "message":"Quiz Updated",
-            "data":quiz_
+    try:
 
-        }
+        quiz_ = db.query(QuizModel.Quiz).filter(QuizModel.Quiz.id==id).first()
+        if quiz_:
+            update_data = quiz.model_dump(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(quiz_, key, value)
+            db.commit()
+            db.refresh(quiz_)
 
-    else:
-        return {
-            "status":"Error",
-            "status_code":404,
-            "message":"Quiz Not found",
-            "data":[]
+            return ResponseSchema(
+                status="update",
+                status_code=200,
+                message="Quiz Updated",
+                data=quiz_
 
-        }
-    
+            )
+
+        else:
+            return ResponseSchema(
+                status="Error",
+                status_code=404,
+                message="Quiz Not found",
+                data=None
+
+            )
+    except Exception as e:
+        db.rollback()
+        return ResponseSchema(
+            status="error",
+            status_code=500,
+            message="Failed to update quiz",
+            error=str(e),
+            data=[]
+        )
 
 @router.delete("/quiz/{id}",response_model=ResponseSchema[QuizResponse],status_code=200)
 def delete_quiz(id:int,db:Session=Depends(get_db)):
 
-    quiz = db.query(QuizModel.Quiz).filter(QuizModel.Quiz.id==id).first()
+    try:
 
-    if not quiz:
-        return {
-            "status":"Error",
-            "status_code":500,
-            "message":"Invalid ID",
-            "data":None
+        quiz = db.query(QuizModel.Quiz).filter(QuizModel.Quiz.id==id).first()
 
-        }
+        if not quiz:
+            return ResponseSchema(
+                status="Error",
+                status_code=500,
+                message="Invalid ID",
+                data=None
+
+            )
+                
+            
+        
+        db.delete(quiz)
+        db.commit()
+
+
+        return ResponseSchema(
+                status="update",
+                status_code=200,
+                message="Quiz Deleted",
+                data=None
+                )
     
-    db.delete(quiz)
-    db.commit()
-
-
-    return {
-            "status":"update",
-            "status_code":200,
-            "message":"Quiz Deleted",
-            "data":None
-
-        }
+    except Exception as e:
+        db.rollback()
+        return ResponseSchema(
+            status="error",
+            status_code=500,
+            message="Failed to delete quiz",
+            error=str(e),
+            data=None
+        )

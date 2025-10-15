@@ -4,6 +4,8 @@ A FastAPI backend system for a Quiz application.
 
 This application allows users to create quizzes, add questions to each quiz, and enables students to attend quizzes. Based on their performance, students are evaluated and ranked.
 
+**API Documentation:** Complete documentation for all endpoints is available via **Swagger UI**, accessible at `/docs` once the server is running.
+
 ## Features
 
 ## Create and manage quizzes

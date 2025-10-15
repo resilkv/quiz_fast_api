@@ -18,27 +18,27 @@ Features
 
 ## Technology Stack
 
-Framework: FastAPI
-Database: PostgreSQL
-ORM & Migrations: SQLAlchemy and Alembic
-Containerization: Docker, Docker Compose
+1. Framework: FastAPI
+2. Database: PostgreSQL
+3. ORM & Migrations: SQLAlchemy and Alembic
+4. Containerization: Docker, Docker Compose
 
-Database Design
+##Database Design
 
 The application mainly uses four tables:
 
-Quiz Table: Stores different quizzes and their criteria.
-Question Table: Stores questions associated with each quiz.
-Student Answers Table: Tracks answers submitted by students and allows teachers to add feedback.
-Student Quiz Performance Table: Connects all data related to a student for a particular quiz.
+1. Quiz Table: Stores different quizzes and their criteria.
+2. Question Table: Stores questions associated with each quiz.
+3. Student Answers Table: Tracks answers submitted by students and allows teachers to add feedback.
+4. Student Quiz Performance Table: Connects all data related to a student for a particular quiz.
 
-Prerequisites
+## Prerequisites
 
-Basic understanding of REST APIs
-Knowledge of FastAPI
+1. Basic understanding of REST APIs
+2. Knowledge of FastAPI
 
 
-Docker Setup
+##Docker Setup
 
 To run the application using Docker:
 
@@ -52,7 +52,7 @@ Build and run containers:
 docker-compose --build
 docker-compose up
 
-Environment Variables:
+## Environment Variables:
 
 Create a .env file inside the app folder with the following values:
 
@@ -71,7 +71,7 @@ APP_PORT=8000
 Once the containers are up, access the API documentation at:
 http://localhost:8000/docs
 
-Local Development
+## Local Development
 
 Clone it from github
 
@@ -99,7 +99,7 @@ Access API docs:
 
 http://localhost:8000/docs
 
-Addition :
+## Addition :
 
 Authentication Flow
 Student Signup & Login

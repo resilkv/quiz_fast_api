@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# Load environment variables
 export $(grep -v '^#' .env | xargs)
 
 echo "Waiting for Postgres to be ready..."

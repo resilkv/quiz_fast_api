@@ -1,10 +1,10 @@
-Quiz API
+#Quiz API
 
 A FastAPI backend system for a Quiz application.
 
 This application allows users to create quizzes, add questions to each quiz, and enables students to attend quizzes. Based on their performance, students are evaluated and ranked.
 
-Features
+## Features
 
 ## Create and manage quizzes
 ### Add multiple types of questions to quizzes:
@@ -23,7 +23,7 @@ Features
 3. ORM & Migrations: SQLAlchemy and Alembic
 4. Containerization: Docker, Docker Compose
 
-##Database Design
+## Database Design
 
 The application mainly uses four tables:
 
@@ -38,7 +38,7 @@ The application mainly uses four tables:
 2. Knowledge of FastAPI
 
 
-##Docker Setup
+## Docker Setup
 
 To run the application using Docker:
 
@@ -58,8 +58,10 @@ Create a .env file inside the app folder with the following values:
 
 
 DATABASE_URL= postgresql+psycopg2://<username>:<password>@db:5432/<db_name>
+
 SECRET_KEY=''
 POSTGRES_USER=''
+
 POSTGRES_PASSWORD=''
 POSTGRES_DB=''
 

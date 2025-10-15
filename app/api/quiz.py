@@ -1,10 +1,11 @@
 
 from typing import List, Optional, Union
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.core.response_schema import ResponseSchema
 from app.models.quiz import Quiz
-from app.schemas.quiz import QuizCreate,QuizResponse
+from app.schemas.quiz import QuizCreate,QuizResponse, QuizUpdate
 from app.core.database import get_db
 import app.models.quiz as QuizModel
 
@@ -16,9 +17,9 @@ router = APIRouter(
 
 @router.post("/",response_model=ResponseSchema[QuizResponse],status_code=201)
 def create_quiz(quiz: QuizCreate, db: Session = Depends(get_db)):
-
+   
     try:
-        db_quiz = Quiz(title=quiz.title, description=quiz.description)
+        db_quiz = Quiz(title=quiz.title, description=quiz.description,passing_criteria=quiz.passing_criteria)
         db.add(db_quiz)
         db.commit()
         db.refresh(db_quiz)
@@ -39,7 +40,7 @@ def create_quiz(quiz: QuizCreate, db: Session = Depends(get_db)):
             )
 
 @router.get("/get-quizzes",response_model=ResponseSchema[Union[QuizResponse, List[QuizResponse]]],status_code=200)
-def get_quizes(id:Optional[int] = Query(None),db: Session=Depends(get_db)):
+def get_quizes(id:Optional[int] = Query(None),db: Session=Depends(get_db),limit: int = Query(10,ge=1,le=100),offset: int = Query(0, ge=0)):
     
     try:
 
@@ -62,11 +63,13 @@ def get_quizes(id:Optional[int] = Query(None),db: Session=Depends(get_db)):
 
                 }
 
-        quizzes = db.query(QuizModel.Quiz).order_by(QuizModel.Quiz.id.desc()).all()
+        total_quizzes = db.query(func.count(QuizModel.Quiz.id)).scalar()
+        quizzes = db.query(QuizModel.Quiz).order_by(QuizModel.Quiz.id.desc()).offset(offset).limit(limit).all()
         return ResponseSchema(
             status="success",
             status_code=200,
             message="Quizzes fetched successfully",
+            total = total_quizzes,
             data=quizzes 
         )
 
@@ -82,13 +85,13 @@ def get_quizes(id:Optional[int] = Query(None),db: Session=Depends(get_db)):
     
 
 @router.put("/quiz-update/{id}",response_model=ResponseSchema[QuizResponse],status_code=200)
-def update_quiz(id:int,quiz:QuizCreate,db:Session=Depends(get_db)):
+def update_quiz(id:int,quiz:QuizUpdate,db:Session=Depends(get_db)):
 
     quiz_ = db.query(QuizModel.Quiz).filter(QuizModel.Quiz.id==id).first()
     if quiz_:
-        quiz_.title = quiz.title
-        quiz_.description = quiz.description
-        quiz_.passing_criteria = quiz.passing_criteria
+        update_data = quiz.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(quiz_, key, value)
         db.commit()
         db.refresh(quiz_)
         return {

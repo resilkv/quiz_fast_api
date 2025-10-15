@@ -17,4 +17,11 @@ class QuizResponse(QuizBase):
     id : int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class QuizUpdate(BaseModel):
+
+    title : Optional[str] = None
+    description : Optional[str] = None
+    passing_criteria : Optional[str] = None
+    

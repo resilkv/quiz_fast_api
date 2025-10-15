@@ -6,15 +6,15 @@ This application allows users to create quizzes, add questions to each quiz, and
 
 Features
 
-# Create and manage quizzes
-# Add multiple types of questions to quizzes:
-    Multiple Choice
-    True/False
-    Short Answer
-    Long Answer
-# Track student performance
-# Add feedback for student answers
-# Evaluate and rank students based on quiz results
+## Create and manage quizzes
+### Add multiple types of questions to quizzes:
+1. Multiple Choice
+2. True/False
+3. Short Answer
+4. Long Answer
+### Track student performance
+### Add feedback for student answers
+### Evaluate and rank students based on quiz results
 
 ## Technology Stack
 
